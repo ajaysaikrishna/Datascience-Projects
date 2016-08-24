@@ -1,0 +1,148 @@
+---
+title: "Assignment 4"
+author: "AJAY SAIKRISHNA DEVARASETTY"
+date: "April 11, 2016"
+output: word_document
+---
+#Q1.a)Here,data visualization is done by installing and using the networkD3 package. Next, I loaded the files and read them in R. No changes were made to the file subs.txt but, for the file keys.txt,I had to bring it to the same readable table format like the subs.txt by inserting a tab space.(\t).Next, a data frame that maps the sources(Ingredient A) to the target(Ingredient B) is created.By using the simplenetwork function present in networkD3,the key ingredients and their substituents are mapped and visualized.Hit zoom to get the enlarged plot.
+
+```{r}
+install.packages("networkD3")
+library(networkD3)
+subs=read.table("subs.txt",col.names=c("A","B"))
+View(subs)
+keys=read.table("keys.txt", sep="\t", col.names=c("id", "name"))
+View(keys)
+sources=subs$A
+target=subs$B
+networkdata=data.frame(sources,target)
+simpleNetwork(networkdata,width=3000,height=3000,nodeColour ="blue",opacity=0.9, textColour ="red", fontSize = 12)
+```
+
+#Q1.b)Degree Centrality: is the number of edges per each node.By doing the following sorting, the total number of edges connected to each node is given in the decreasing order.For example: the degree centrality of node 290 is 2.That is it is connected to more nodes only.
+```{r}
+c=sort(table(c(sources, target)), decreasing = TRUE)
+c
+```
+
+#Q1.c)From the sorted table we can see that, the most connected node is node 2 with 33 edges. It is followed by node 12 which has 29 edges and node 79 which has 29 edges and so on...
+
+```{r}
+c=sort(table(c(sources, target)), decreasing = TRUE)
+c
+max(c)
+```
+
+#Q1.d)Visually determing the furthest ingredients from cocoa powder:theoretically speaking,the nodes which are not connected to the interconnected network have infinite distance to the cocoa powder node(408). There are 19 such nodes:463(baking mix),464(pancake mix),431(pound cake),432(angel food cake),480(avocado),481(guacamole),459(toothpick),460(skewer),93(marshmallow),94(marshmallow creme),110(dijon mustard),111(spicy brown mustard),107(yellow mustard),108(honey mustard),109(mustard),256(mustard powder),353(mustard seed),113(mussel),114(clam),Within the interconnected network, I think Saffron(551) and Iceberg lettuce(98) is the fathest.
+
+#Q2.a)I had to install the twitteR package and the RCurl package.Then I went into my account in apps.twitter.com and then found out the following parameters and then made them into consumer_key,consumer_secret,access_token and access_secret variables.Then I used setup_twitter_oauth for initializing the twitter app.
+```{r}
+install.packages("httr")
+install.packages("devtools")
+install.packages("twitteR")
+install.packages("base64enc")
+library(httr)
+library(devtools)
+library(twitteR)
+library(base64enc)
+require(twitteR)
+require(RCurl)
+consumer_key <-'OE2rAnX9Z3gxdy8P6iGfrLoUg'
+consumer_secret <-'jkOs3ctwniqSFZwlTnA5VZZvsO3Sk7PglEkYi6YiNoYTHWQMZv'
+access_token <-'952934900-8nwb91BPVgQbBd6KSg1r7G10IVQ6ZMyhsCfA9INp'
+access_secret <-'l4XM8rFOz8lv0L2DYFCtLyjJHqephjzLtm6zWYXOalH2Z'
+setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+```
+
+#2b)After that we had to download tweets with hashtag "#SXSW2016" and I used them in a variable called MyTweets.
+```{r}
+myTweets <- searchTwitter("#SXSW2016", n=200, lang="en")
+myTweets
+```
+#I have used a variable k and set it to 100. Then a variable named nameDF is initialized with screenName defined. I have made a list of 100 names and put that in a data frame called hundredNamesDF.
+```{r}
+k = 100
+tweetsDF <- twListToDF(myTweets)
+nameDF <- tweetsDF[, c("screenName")]
+uniqueNameDF <- unique(nameDF)
+hundredNamesDF <- head(uniqueNameDF, k)
+hundredNamesDF
+```
+
+#2c)For visualizing the network, I installed the networkD3 and igraph packages. I used a for loop for follower and friends count. Then I have assessed it by computing degree and other parameters.Later,the data has been visualized using simpleNetwork function.The for loop functions as the follows: First the loop is run for the i in 1:100.Even though there are slight errors/warnings due to the retry time, they are ignored and the for loop is run again atleast till a time where the network variable in the global environment shows it has enough obs ie, atleast more than 13k obs of 2 variables to procedd with the question. In my trial runs, I had executed the 1:100 atleast 3 times before i changed the i to 8:100. Then, i achieved 20k obs of 2 variables in the network field.Hence,the pause is given manually
+
+```{r}
+require(networkD3)
+require(igraph)
+library(networkD3)
+library(igraph)
+network <-data.frame(src=character(), target=character(), stringsAsFactors=FALSE)
+
+for(i in 1:100){
+  start <- getUser(hundredNamesDF[i])
+  friends.object<-lookupUsers(start$getFriendIDs(retryOnRateLimit=180))
+  follower.object<-lookupUsers(start$getFollowerIDs(retryOnRateLimit=180))
+  n<- length(friends.object)
+  m<- length(follower.object)
+  friends <- sapply(friends.object[1:n],screenName)
+  followers <- sapply(follower.object[1:m],screenName)
+  networkData <- data.frame(src=hundredNamesDF[i], target=friends)
+  network <- merge(network, networkData,  all=T)
+  networkData <- data.frame(src=followers, target=hundredNamesDF[i])
+  network <- merge(network, networkData,  all=T)
+}
+```
+#degree assess-  Indegree centrality is determined by the number of ties directed to or received by a node.This kind of measurement is only useful with directed data, when the ties are received or directed out (such as being mentioned in a Tweet, or mentioning someone in a Tweet).Outdegree centrality is the opposite of indegree centrality, as it is determined by the number of ties directed or sent from a node to others. This form of measurement is also only useful with directed data, as in undirected data there would simply be a set number of ties per node, with no direction coming or going to each node.Total degree ranking combines the Indegree and Outdegree counts together to create the node's total degree, or in the case of an undirected network (such as a co-authorship network) would essentially be determined by the number of connections of a specific node.I chose total which is a combination of indegree and outdegree to get more information of the users.But, the most appropriate metric other than total is the "outdegree" rathen than the "indegree".This is because unless you are a really famous person, like say, Donald Trump, then your indegree would not be higher than your outdegree.
+
+```{r}
+g <- graph.data.frame(network, directed = F)
+degree(g, mode = "total")
+degree_distribution(g)
+
+# Plot
+simpleNetwork(network, zoom = T, linkDistance =60 , opacity = 0.5, linkColour = "grey", nodeColour = "purple", nodeClickColour = "red", textColour = "blue")
+
+```
+
+#3a)We have to basically install the ngram package. Like done in the previous question we have to download tweets and put it into myTweets variable.
+```{r}
+install.packages("ngram")
+library(ngram)
+myTweets <- searchTwitter("#SXSW2016", n=200, lang="en")
+myTweetsdf<-twListToDF(myTweets)
+```
+#3b) and #3c) for 3b and 3c) the foloowing approach was used: First, I had to initialize a corpus.Then, I used a tm_map on the corpus.Next, I determined Document Term Matrix of the corpus.Later the frequency and the BigramTokenizer and TrigramTokenizer which gives bigrams and trigrams was found out as follows:
+
+#3b) and #3c) R code together:-
+```{r}
+install.packages("tm")
+library(tm)
+tweetsDF$text->tweets_total
+tweets_source <- VectorSource(tweets_total)
+corpus <- Corpus(tweets_source)
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, stripWhitespace)
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+dtm <- DocumentTermMatrix(corpus)
+dtm2 <- as.matrix(dtm)
+
+frequency <- colSums(dtm2)
+frequency <- sort(frequency, decreasing=TRUE)
+frequency
+BigramTokenizer <- function(x)unlist(lapply(ngrams(words(x), 2), paste, collapse = " "), use.names = FALSE)
+
+
+tdm <- TermDocumentMatrix(corpus, control = list(tokenize = BigramTokenizer))
+tdm2 <- as.matrix(tdm)
+frequency_2 <- rowSums(tdm2)
+frequency_2 <- sort(frequency_2, decreasing=TRUE)
+frequency_2
+trigramTokenizer <- function(x)unlist(lapply(ngrams(words(x), 3), paste, collapse = " "), use.names = FALSE)
+
+tdm_3 <- TermDocumentMatrix(corpus, control = list(tokenize = trigramTokenizer))
+tdm2_3 <- as.matrix(tdm_3)
+
+frequency_3 <- rowSums(tdm2_3)
+frequency_3 <- sort(frequency_3, decreasing=TRUE)
+frequency_3
+```
