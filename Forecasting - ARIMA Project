@@ -1,31 +1,12 @@
----
-title: "Time Series Analysis and Pattern Finding Using KNN"
-author: "Ajay Saikrishna Devarasetty"
-date: "March 1, 2016"
-output: pdf_document
-
----
-Note : I discussed verbally the concepts with Deepak Kadimela but the code and comments are solely prepared by me.
-
-
-#Question 1.a:
-#An important step before fitting an ARIMA function is to make sure the timeseries is stationary. To do this, there are many ways to remove trend and seasonality.
-#One easy approach is to use the function ts( ) in the stats package to remove seasonality, and use diff to remove a trend. Use these functions (or other approaches if you wish) to make the JoJo series stationary. (3 points) 
-#A first step in analyzing (stationary) time series is to examine the autocorrelations (ACF) and partial autocorrelations (PACF). R provides the functions acf( ) and pacf( ) for computing and plotting of ACF and PACF. The order of "pure" AR and MA processes can be identified from the ACF and PACF plots. Example ACF plots suggesting AR(5) and MA(4) values, left and right respectively, are shown below.
-
-#Code: 
-```
 library(stats)
 jojo <- read.delim(file.choose(),head=T)
 View(jojo)
 p <- 1:83
 plot(p, jojo$X.71, ylab="Earnings per Share", main="Johnson & Johnson", col="blue", type="l")
-
 #Using the function ts() to remove the seasonality 
 ts <- ts((jojo$X.71), frequency = 4, start = c(1960))
 View(ts)
 plot(ts)
-
 k = c(.5,1,1,1,.5)
 k = k/sum(k)      
 filterjojo = filter(jojo, sides=2, k) 
@@ -39,73 +20,40 @@ dljojo2 <- dljojo[3:80,]
 plot.ts(dljojo2)
 #Verifying the time series to be Stationary by using Shapiro Test.
 shapiro.test(dljojo) 
-```
-#Question 1.b: 
-#What order AR and MA are the JoJo.dat? Plot the ACF and PACF of the data. Indicate the units of lags in the plots. What kind of ARMA would you deem appropriate based on these plots?
-#Code:
-#Finding the Correlation Function and Auto COrrelation Function
-#The order of AR is 2 and MA is 7 found from the plots ACF and PACF plots.
-#The deemed modelis ARMA (2,7) 
-```
 #Finding the ACF plot.
 acf(dljojo2) 
 #Finding the PACF plot.
 pacf(dljojo2)  
-
-```
-#Question 1.c:
-#Once the order of the ARIMA(p,d,q)-model has been specified, the function arima( ) from the stats package can be used to estimate the parameters: arima(data,order=c(p,d,q)). Try out different values of p and q
-#Code:
-#Using different p,q values (1,0),(0,1),(2,0),(1,1)
-```
 x1 = arima.sim(list(order=c(1,0,0), ar=.9), n=100) 
 x2 = arima.sim(list(order=c(1,0,0), ar=-.9), n=100)
 par(mfrow=c(2,1))
-plot(x1, main=(expression(AR(1)~~~phi==+.9)))    
-plot(x2, main=(expression(AR(1)~~~phi==-.9)))
+plot(x1, main=(expression(AR(1)~~~ phi==+.9)))    
+plot(x2, main=(expression(AR(1)~~~ phi==-.9)))
 x11()                                        
 par(mfcol=c(2,2))
 acf(x1, 20)
 acf(x2, 20)
 pacf(x1, 20)
 pacf(x2, 20)
-
 x = arima.sim(list(order=c(0,0,1), ma=.8), n=100)
 par(mfcol=c(3,1))
-plot(x, main=(expression(MA(1)~~~theta==.8)))
+plot(x, main=(expression(MA(1)~~~ theta==.8)))
 acf(x,20)
 pacf(x,20)
-
 x = arima.sim(list(order=c(2,0,0), ar=c(1,-.9)), n=100) 
 par(mfcol=c(3,1))
-plot(x, main=(expression(AR(2)~~~phi[1]==1~~~phi[2]==-.9)))
+plot(x, main=(expression(AR(2)~~~ phi[1]==1~~~ phi[2]==-.9)))
 acf(x, 20)
 pacf(x, 20)
-
 x = arima.sim(list(order=c(1,1,1), ar=.9, ma=-.5), n=200)
 par(mfcol=c(3,1))
-plot(x, main=(expression(ARIMA(1,1,1)~~~phi==.9~~~theta==-.5)))
+plot(x, main=(expression(ARIMA(1,1,1)~~~ phi==.9~~~ theta==-.5)))
 acf(x, 30)  
 pacf(x, 30)
-```
-#Question 1.d:
-#A first step in diagnostic checking of fitted models is to analyze the residuals from the fit for any signs of non-randomness. R has the function tsdiag( ), which produces a diagnostic plot of a fitted time series model. Are the residuals stationary?
-#COde:
-#Using tsdiag() for producing diagnostic plot of fitted time series model.
-#The residuals are not stationary that are found by kpss test.
-```
 x = arima.sim(list(order=c(1,0,1), ar=.9, ma=-.5), n=100)
 x.fit = arima(x, order = c(1, 0, 1))
 tsdiag(x.fit, gof.lag=20)
 kpss.test(x, null = c("Level", "Trend"), lshort = TRUE)
-```
-#Question 1.e:
-#Once a model has been identified and its parameters have been estimated, one purpose is to predict future values of a time series. Lets assume, that we are satisfied with the fit of an ARIMA(1,0,1)-model to the JoJo data using the predict( ) function
-#Modelling the data using predict() function
-#Predicting the values using ARIMA (1,0,1) model
-#Code:
-#The code shows how to predict future values of a time series.
-```
 x.fore = predict(x.fit, n.ahead=10)  
 U = x.fore$pred + 2*x.fore$se
 L = x.fore$pred - 2*x.fore$se
@@ -114,20 +62,7 @@ maxx=max(x,U)
 ts.plot(x,x.fore$pred,col=1:2, ylim=c(minx,maxx))
 lines(U, col="blue", lty="dashed")
 lines(L, col="blue", lty="dashed") 
-```
-#Question 1.f:
-#Plot the result with confidence intervals
-#Code:
-#This code gives the confidence intervals .
-```
 ts.plot(x,x.fore$pred,interval="confidence")
-```
-# Question 2.a 
-# Now, let's perform a binary classification by transforming the data. 
-# Create a new DataFrame column called "bi".
-# If the type of glass is one through four, set bi = 0.
-# If the type of glass is five through seven, set bi = 1. 
-#Code:
 data <- read.csv(file.choose(),head=FALSE,sep=",")
 View(data)
 #Naming the columns with the corresponding elements
@@ -140,25 +75,14 @@ data$bi <- 0
 #bi will be 1 for type >= 4 and 0 else
 data$bi <- ifelse(data$Type >= 4,1,0)
 View(data)
-# Question 2.b
-# Create a feature matrix "fea" using all features 
-# this requires you to select carefully from all the 
-# data frame columns, and create a response vector "y" 
-# from the "bi" column
-# Code:
-# fea ( feature matrix):
+fea ( feature matrix):
 m1=matrix(c(data$RI,data$Na,data$Mg,data$Al,data$Si,data$K,data$Ca,data$Ba,data$Fe),nrow=214,ncol =9,byrow = F)
 View(m1)
 fea <- m1
 View(fea) 
-# Response Vector "y" from the "bi" column 
-m2=lm(data$bi~data$RI+data$Na+data$Mg+data$Al+data$Si+data$K+data$Ca+data$Ba+data$Fe)
+ m2=lm(data$bi~data$RI+data$Na+data$Mg+data$Al+data$Si+data$K+data$Ca+data$Ba+data$Fe)
 y=m2$model$'data$bi'
 View(y)
-#Question 2.c
-#Split fea and y into training and testing sets. 
-#How do you pick the size of each? 
-#Code :
 install.packages("som")
 library(som)
 library(class)
@@ -177,10 +101,7 @@ traindata<-data_normalize[train,]
 trainres<-dataframecoll[train,]
 testdata<-data_normalize[-train,]
 testres<-dataframecoll[-train,]
-
-#Question 2.d:
 #Fit a KNN model on the training set using K=5. There are multiple functions in R available for this
-#Code:
 #Using the package caret for training the 
 trainres<-(dataframecoll[train,])
 length(trainres)
@@ -192,9 +113,8 @@ install("caret")
 library("caret")
 library("class")
 confusionMatrix(testres,knn_req)
-#Question 2.e:
 #Make predictions for the testing set and calculate testing accuracy.
-#The KNN is used for fiding the testing accuracy.
+#The KNN is used for finding the testing accuracy.
 #Code:
 seq<-c(1,3,6,9,12,15,18,21)
 for(val in seq)
@@ -203,10 +123,8 @@ knn_req<-knn(train=traindata,test=testdata,cl=trainres,k=val)
 GetAccuracy<-confusionMatrix(testres,knn_req)
 Accuracyvector<-c(Accuracyvector,GetAccuracy$overall[1])
 }
-#Question 2f:
 #Write a loop that computes the testing accuracy 
 #for a reasonable range of K values 
-#code:
 #We are taking a range of c values(1,3,6,9,12,15,18,21)
 library(class)
 seq<-c(1,3,6,9,12,15,18,21)
@@ -215,10 +133,8 @@ for(val in seq)
  knn_req<-knn(train=traindata,test=testdata,cl=trainres,k=val)
  print("confusion matrix for k=")
 }
-#Question 2.g:
 #Plot the K value versus testing accuracy to help you choose an optimal value for K. What is that optimal value? (3 points).
 #From the plot we can say that the optimum value for k is 1.
-#Code:
 seq<-c(1,3,6,9,12,15,18,21)
 Accuracyvector<-integer()
 for(val in seq){
