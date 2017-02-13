@@ -1,0 +1,106 @@
+#Data visualization is done by installing and using the networkD3 package.No changes were made to the file subs.txt but, for the file keys.txt,I had to bring it to the same readable table format like the subs.txt by inserting a tab space.(\t).Next, a data frame that maps the sources(Ingredient A) to the target(Ingredient B) is created.By using the simplenetwork function present in networkD3,the key ingredients and their substituents are mapped and visualized.Hit zoom to get the enlarged plot.
+
+install.packages("networkD3")
+library(networkD3)
+subs=read.table("subs.txt",col.names=c("A","B"))
+View(subs)
+keys=read.table("keys.txt", sep="\t", col.names=c("id", "name"))
+View(keys)
+sources=subs$A
+target=subs$B
+networkdata=data.frame(sources,target)
+simpleNetwork(networkdata,width=3000,height=3000,nodeColour ="blue",opacity=0.9, textColour ="red", fontSize = 12)
+c=sort(table(c(sources, target)), decreasing = TRUE)
+c
+
+c=sort(table(c(sources, target)), decreasing = TRUE)
+c
+max(c)
+install.packages("httr")
+install.packages("devtools")
+install.packages("twitteR")
+install.packages("base64enc")
+library(httr)
+library(devtools)
+library(twitteR)
+library(base64enc)
+require(twitteR)
+require(RCurl)
+consumer_key <-'OE2rAnX9Z3gxdy8P6iGfrLoUg'
+consumer_secret <-'jkOs3ctwniqSFZwlTnA5VZZvsO3Sk7PglEkYi6YiNoYTHWQMZv'
+access_token <-'952934900-8nwb91BPVgQbBd6KSg1r7G10IVQ6ZMyhsCfA9INp'
+access_secret <-'l4XM8rFOz8lv0L2DYFCtLyjJHqephjzLtm6zWYXOalH2Z'
+setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+
+myTweets <- searchTwitter("#SXSW2016", n=200, lang="en")
+myTweets
+
+k = 100
+tweetsDF <- twListToDF(myTweets)
+nameDF <- tweetsDF[, c("screenName")]
+uniqueNameDF <- unique(nameDF)
+hundredNamesDF <- head(uniqueNameDF, k)
+hundredNamesDF
+
+require(networkD3)
+require(igraph)
+library(networkD3)
+library(igraph)
+network <-data.frame(src=character(), target=character(), stringsAsFactors=FALSE)
+
+for(i in 1:100){
+  start <- getUser(hundredNamesDF[i])
+  friends.object<-lookupUsers(start$getFriendIDs(retryOnRateLimit=180))
+  follower.object<-lookupUsers(start$getFollowerIDs(retryOnRateLimit=180))
+  n<- length(friends.object)
+  m<- length(follower.object)
+  friends <- sapply(friends.object[1:n],screenName)
+  followers <- sapply(follower.object[1:m],screenName)
+  networkData <- data.frame(src=hundredNamesDF[i], target=friends)
+  network <- merge(network, networkData,  all=T)
+  networkData <- data.frame(src=followers, target=hundredNamesDF[i])
+  network <- merge(network, networkData,  all=T)
+
+g <- graph.data.frame(network, directed = F)
+degree(g, mode = "total")
+degree_distribution(g)
+
+# Plot
+simpleNetwork(network, zoom = T, linkDistance =60 , opacity = 0.5, linkColour = "grey", nodeColour = "purple", nodeClickColour = "red", textColour = "blue")
+
+install.packages("ngram")
+library(ngram)
+myTweets <- searchTwitter("#SXSW2016", n=200, lang="en")
+myTweetsdf<-twListToDF(myTweets)
+
+install.packages("tm")
+library(tm)
+tweetsDF$text->tweets_total
+tweets_source <- VectorSource(tweets_total)
+corpus <- Corpus(tweets_source)
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, stripWhitespace)
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+dtm <- DocumentTermMatrix(corpus)
+dtm2 <- as.matrix(dtm)
+
+frequency <- colSums(dtm2)
+frequency <- sort(frequency, decreasing=TRUE)
+frequency
+BigramTokenizer <- function(x)unlist(lapply(ngrams(words(x), 2), paste, collapse = " "), use.names = FALSE)
+
+
+tdm <- TermDocumentMatrix(corpus, control = list(tokenize = BigramTokenizer))
+tdm2 <- as.matrix(tdm)
+frequency_2 <- rowSums(tdm2)
+frequency_2 <- sort(frequency_2, decreasing=TRUE)
+frequency_2
+trigramTokenizer <- function(x)unlist(lapply(ngrams(words(x), 3), paste, collapse = " "), use.names = FALSE)
+
+tdm_3 <- TermDocumentMatrix(corpus, control = list(tokenize = trigramTokenizer))
+tdm2_3 <- as.matrix(tdm_3)
+
+frequency_3 <- rowSums(tdm2_3)
+frequency_3 <- sort(frequency_3, decreasing=TRUE)
+frequency_3
+
