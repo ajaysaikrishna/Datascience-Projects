@@ -1,41 +1,8 @@
----
-title: "Foundation of Data Sciences- Assignment 1"
-author: "Ajay Saikrishna Devarasetty"
-date: "February 16, 2016"
-output: pdf_document
----
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-#Question1.1:What is an HHS Region ?
-
-#Solution:
-#United States is divided into different regions with each region containing a group of states called HHS Region by the office of Intergovernmental and External Affairs.The Office of Intergovernmental and External Affairs hosts ten Regional Offices that directly serve state and local organizations. A President-appointed Regional Director leads each office.Each Regional Director ensures the Department maintains close contact with state, local, and tribal partners and addresses the needs of communities and individuals served through HHS programs and policies.
-#Each Regional Director ensures the Department maintains close contact with state, local, and tribal partners and addresses the needs of communities and individuals served through HHS programs and policies.
-
-#Reference->http://www.hhs.gov/about/agencies/regional-offices/
-
-#Question1.2:How do the HHS region values compare to the state values ?
-
-#Solution:
-#I took the example of HHS Region 7.I performed linear regression on HHS Region 7 and the state values which comprises of Iowa,Kansas,Missouri and Nebraska. I got a Multiple R-squared value of 0.9615 which proves that they are very closely related.
-
-```
-#Code:
 file<-read.csv("US_data.csv",head=TRUE) #reading the file of US Flu data
 attach(file) # attaching the file
 model<-lm(HHS.Region.7..IA..KS..MO..NE.~Iowa+Kansas+Missouri+Nebraska) # finding the linear regression on region 7 with the states Iowa , Kansas, Missouri , Nebraska  
 summary(model) # finding the summary of linear regression 
-
 #Reference : World Flu Data - https://www.google.org/flutrends/about/data/flu/us/data.txt
-```
-#Question1.3:Group the cities by state and examine how those grouped values compare to state values. Use descriptive statistics. How have you decided to handle missing data and why does that make sense? 
-
-#Solution: As an example I took the state of Massachusetts and its cities Boston and Sommerville for this question.For the example I considered there is no missing data of Massachusetts , Boston and Sommerville.The values of all the three are resembling others.All the three plots are approximately the same. So we can approximate all the plots as one and we can use the plot to find the missing data.
-
-#Code:
 US_data <- read.csv(file.choose(),head=TRUE,sep=",") 
 #reading the file to US_data
 US_data ["ID"] <- seq(from=1,to=length(US_data$SN),by=1)
@@ -47,26 +14,12 @@ points(US_data$ID,Boston..MA,col="red",pch=20)
 #plotting the ID vs Boston
 points(US_data$ID,Sommerville..MA,col="blue",pch=20)
 #plotting the ID vs Sommerville
-
-```
-#Question1.4:Design two relevant metrics that would be informative from this data. Examples of potential metrics include: Quantiles, mean, median, variance, and max, and these across the various geographic segments. Be selective. Think about who could use the data and what will be important to track over time. Also, what will summarize the data, but still be useful. Describe why you chose your metrics and show how you calculated them.
-
-#Solution:I took the example of the HHS region 7 for this question.I found the "Mean" of HHS Region and compared that with that of the HHS region value.I find Mean and Max as the two relevant metrics that would be informative from this data.This can be used to track over time.This can be inferred from the plots also.
-
 #Code:attach(US_data)
 plot(SN,(Iowa+Kansas+Missouri+Nevada)/4,col="blue",pch=20)
 #Here I plotted the SN vs the mean of HHS region 7.
 attach(US_data)
 points(SN,HHS.Region.7..IA..KS..MO..NE.,col="red",pch=20)
-# I plotted the SN vs HHS Region 7 value. 
-
 #References:US_Data :https://www.google.org/flutrends/about/
-
-#Question 1.5 :Find the population of the states (give a complete citation/credit for your source), and create a comparison of population vs. peak flu trend value for the most recent year. Describe how you have decided do the comparison, show your calculations and report your findings.
-```
-#Solution: I took the polpulation of states and compared that with that of flu trend for the year 2015. I plotted the population vs peak flu trend to find the patterns between them.
-
-#Code:
 library(XML) # Calling the required packages.
 install.packages("RCurl") # Installing the requred package.
 library(RCurl)
@@ -97,15 +50,6 @@ datasetplot2<-sqldf("select * from state_popdf2 where V5 not in('Midwest Region'
 View(datasetplot2)
 plot(new_df$new_df,datasetplot2$V13,ylab="population", xlab="flu trends")
 
-#Reference:
-Population Statistics:https://en.wikipedia.org/wiki/List_of_U.S._states_and_territories_by_population
-
-#Question 2:Plot the center latitude for the country versus peak week of flu in the most recent year of data. Is there any relationship? In your response remember to credit your source for the latitude information. 
-#Solution:I took the central latitude value and compared that with that of peak week flu.
-
-#Solution:I plotted the center latitude vs the peak week of flu.
-
-#Code:
 world_data2<-read.csv(file.choose(),head=FALSE,sep=",",skip='627')
 header<-read.csv(file.choose(),head=FALSE,sep=",",nrows=1,stringsAsFactors=FALSE)
 colnames(file2)<-unlist(header)
@@ -118,14 +62,6 @@ library(sqldf)
 countrlatitude=read.csv.sql(file.choose(),'SELECT Latitude FROM file where country in(\"AR\",\"AU\",\"AT\",\"BE\",\"BO\",\"BR\",\"BG\",\"CA\",\"CL\",\"FR\",\"DE\",\"HU\",\"JP\",\"MX\",\"NL\",\"NZ\",\"NO\",\"PY\",\"PE\",\"PL\",\"RO\",\"RU\",\"ZA\",\"ES\",\"SE\",\"CH\",\"UA\",\"US\",\"UY\")')
 plot(df1$df..1...,countrlatitude$latitude)
 
-#References: 
-#Central Latitude:http://dev.maxmind.com/geoip/legacy/codes/country_latlon/
-#World Flu Data : https://www.google.org/flutrends/about/data/flu/data.txt
-
-#Question3(a) :Read the Vaccine Status data from the table on the above website into an R data frame. There are many packages to use, I suggest you try the XML package which has useful functions such as htmlParse() to read in HTML documents and readHTML_Table()
-
-#Solution: I used the below code to extract the vaccine status from the table in the mentioned html page.
-#Code:
 install.packages("XML") # Installing the necessary packages 
 library(XML) # calling the library
 install.packages("RCurl")
@@ -143,12 +79,6 @@ y1[,"p value"]<-data.frame(y$V10)
 View(y1)
 y2<-y1[-1:-3,]
 View(y2)
-
-#Question3(b):
-#Find another example of a table somewhere on the web to load into R (Reminder, everyone must complete this assignment independently including finding a unique table to download). Provide the link to where the table is found along with your code.
-
-#Solution: I took the wikipedia page of list of US state abbreviations. I used the code to load the table into R as can be seen below.
-#Code:
 x<-getURL("https://en.wikipedia.org/wiki/List_of_U.S._state_abbreviations")
 y<-readHTMLTable(x,header=T,which=1,stringASFactors=F)
 View(y) # viewing the table.
