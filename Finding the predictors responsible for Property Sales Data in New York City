@@ -1,0 +1,60 @@
+manhattan_data <- read.csv(file.choose(), header=TRUE, skip = 4, colClasses = c("NEIGHBORHOOD" = "character", "ADDRESS" = "character","APARTMENT.NUMBER" = "character","LAND.SQUARE.FEET" = "character","GROSS.SQUARE.FEET" = "character","TAX.CLASS.AT.TIME.OF.SALE" = "factor","SALE.PRICE" = "character"))
+str(manhattan_data)
+#I had changed the formats for the sales date to month-date-year
+#Changed the sales price to numbered format without commas using gsub and as.numeric functions for SALE.DATE column
+#Changed the Land Sqaure feet to numbered format without commas using gsub and as.numeric functions for LAND.SQUARE.FEET and GROSS.SQUARE.FEET columns
+#changing neighbourhood to a factor type variable using as.factor function
+manhattan_data$SALE.DATE <- as.Date(manhattan_data$SALE.DATE, format = "%m/%d/%Y")
+manhattan_data$SALE.PRICE <-gsub(",","",manhattan_data$SALE.PRICE)
+manhattan_data$SALE.PRICE <- as.numeric(manhattan_data$SALE.PRICE)
+manhattan_data$LAND.SQUARE.FEET <-gsub(",","",manhattan_data$LAND.SQUARE.FEET)
+manhattan_data$LAND.SQUARE.FEET <- as.numeric(manhattan_data$LAND.SQUARE.FEET)
+manhattan_data$GROSS.SQUARE.FEET <-gsub(",","",manhattan_data$GROSS.SQUARE.FEET)
+manhattan_data$GROSS.SQUARE.FEET <- as.numeric(manhattan_data$GROSS.SQUARE.FEET)
+manhattan_data <- manhattan_data[-which(manhattan_data$NEIGHBORHOOD == "MANHATTAN-UNKNOWN        "),]
+manhattan_data$NEIGHBORHOOD <- as.factor(manhattan_data$NEIGHBORHOOD)
+manhattan_data <- manhattan_data[,-1]
+summary(manhattan_data$EASE.MENT)
+manhattan_data <- manhattan_data[,-6]
+str(manhattan_data)
+manhattan_data$APARTMENT.NUMBER <- data.frame(gsub("            ",NA,manhattan_data$APARTMENT.NUMBER, fixed = TRUE))
+colnames(manhattan_data[,8]) <- "APARTMENT.NUMBER"
+manhattan_data$APARTMENT.NUMBER <- as.character(manhattan_data$APARTMENT.NUMBER)
+manhattan_data$LAND.SQUARE.FEET[manhattan_data$LAND.SQUARE.FEET == 0] <-NA
+manhattan_data$GROSS.SQUARE.FEET[manhattan_data$GROSS.SQUARE.FEET == 0] <-NA
+manhattan_data$YEAR.BUILT[manhattan_data$YEAR.BUILT == 0] <- NA
+manhattan_data$RESIDENTIAL.UNITS[manhattan_data$TOTAL.UNITS == 0] <- NA
+manhattan_data$COMMERCIAL.UNITS[manhattan_data$TOTAL.UNITS == 0] <- NA
+manhattan_data$TOTAL.UNITS[manhattan_data$TOTAL.UNITS == 0] <- NA
+rolling_data <- unique(manhattan_data$NEIGHBORHOOD)
+summary<- summary(manhattan_data$SALE.PRICE[manhattan_data$NEIGHBORHOOD == rolling_data[1]])
+summary
+for(i in 1:38){
+plot(manhattan_data$SALE.PRICE[manhattan_data$NEIGHBORHOOD==rolling_data[i]],col=i, pch=20)}
+plot(manhattan_data$SALE.DATE,manhattan_data$SALE.PRICE,col="steelblue", pch=20)
+View(manhattan_data)
+model <- lm(SALE.PRICE ~ GROSS.SQUARE.FEET+LAND.SQUARE.FEET+ factor(NEIGHBORHOOD)*factor(BUILDING.CLASS.CATEGORY), data = manhattan_data)
+plot(resid(model), col='blue', pch=20)
+
+library(caret)
+library(dplyr)
+Sales1 <- manhattan_data[which(manhattan_data$GROSS.SQUARE.FEET > 0 & manhattan_data$LAND.SQUARE.FEET >0 & manhattan_data$SALE.PRICE > 0),]
+Sales2 <- Sales1[,c(1,9,14,13,15,18)]
+control <- trainControl(method="repeatedcv",repeats = 10)      
+fit <- train(NEIGHBORHOOD~ ., data = Sales2,trControl = control, method = "knn")
+plot(fit)
+plot(fit)
+print(fit)
+
+Sales3 <- scale(Sales2[,c(3,4,6)])
+View(Sales3)
+PCA_manhattan_data = prcomp(~SALE.PRICE+GROSS.SQUARE.FEET+LAND.SQUARE.FEET,data=Sales1,na.action = na.omit,scale=T,center=T)
+str(PCA_manhattan_data)
+summary(PCA_manhattan_data)
+predict(PCA_manhattan_data)
+
+biplot(PCA_manhattan_data,cex=1.5)
+PCA_vector1 <- as.matrix(Sales3[,c(1:3)]) %*% PCA_manhattan_data$rot[,c(1,2)]
+PCA_vector2 <- as.matrix(Sales3[,c(1:3)]) %*% PCA_manhattan_data$rot[,c(1,3)]
+plot(PCA_vector1, col='red', pch=20)
+points(PCA_vector2, col='blue', pch=20)
