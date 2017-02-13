@@ -1,6 +1,6 @@
 file<-read.csv("US_data.csv",head=TRUE) #reading the file of US Flu data
 attach(file) # attaching the file
-model<-lm(HHS.Region.7..IA..KS..MO..NE.~Iowa+Kansas+Missouri+Nebraska) # finding the linear regression on region 7 with the states Iowa , Kansas, Missouri , Nebraska  
+model<-lm(HHS.Region.7..IA..KS..MO..NE.~Iowa+Kansas+Missouri+Nebraska) # finding the linear regression on region 7 with the states Iowa, Kansas, Missouri , Nebraska  
 summary(model) # finding the summary of linear regression 
 #Reference : World Flu Data - https://www.google.org/flutrends/about/data/flu/us/data.txt
 US_data <- read.csv(file.choose(),head=TRUE,sep=",") 
@@ -49,7 +49,6 @@ View(state_popdf2)
 datasetplot2<-sqldf("select * from state_popdf2 where V5 not in('Midwest Region','Northeast Region','Puerto Rico','South Region','West Region','United States')")
 View(datasetplot2)
 plot(new_df$new_df,datasetplot2$V13,ylab="population", xlab="flu trends")
-
 world_data2<-read.csv(file.choose(),head=FALSE,sep=",",skip='627')
 header<-read.csv(file.choose(),head=FALSE,sep=",",nrows=1,stringsAsFactors=FALSE)
 colnames(file2)<-unlist(header)
@@ -61,7 +60,6 @@ install.packages("sqldf")
 library(sqldf)
 countrlatitude=read.csv.sql(file.choose(),'SELECT Latitude FROM file where country in(\"AR\",\"AU\",\"AT\",\"BE\",\"BO\",\"BR\",\"BG\",\"CA\",\"CL\",\"FR\",\"DE\",\"HU\",\"JP\",\"MX\",\"NL\",\"NZ\",\"NO\",\"PY\",\"PE\",\"PL\",\"RO\",\"RU\",\"ZA\",\"ES\",\"SE\",\"CH\",\"UA\",\"US\",\"UY\")')
 plot(df1$df..1...,countrlatitude$latitude)
-
 install.packages("XML") # Installing the necessary packages 
 library(XML) # calling the library
 install.packages("RCurl")
